@@ -3,33 +3,556 @@
 Yoshinari Namba
 2021/6/22
 
-## R Markdown
+# 1. 繰り返し・条件分岐
 
-This is an R Markdown document. Markdown is a simple formatting syntax
-for authoring HTML, PDF, and MS Word documents. For more details on
-using R Markdown see <http://rmarkdown.rstudio.com>.
+## 1-1 繰り返し構文
 
-When you click the **Knit** button a document will be generated that
-includes both content as well as the output of any embedded R code
-chunks within the document. You can embed an R code chunk like this:
+データを加工する際，変更箇所の少ない演算を何度も繰り返し行うことがあります．
+そんなときに便利なのが`for`を使った繰り返し構文です．
 
 ``` r
-summary(cars)
+for(i in 範囲){
+  コマンド 1
+  コマンド 2
+  コマンド 3
+}
 ```
 
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+ここで，`i`は繰り返しを制御する文字です．「`i`が`範囲`内の値を順番に取ったときに～というコマンドを実行する」という指令を出しています．例を見てみましょう．No.1からNo.10を出力したいときには次のようなコードで実行できます．文字を出力したいときは`cat()`関数が便利です．引数は出力したい文字です．`"\n"`で改行を指定します．
 
-## Including Plots
+``` r
+for(i in 1:10){
+  cat("No.", i, "\n") # No. i を出力して改行
+}
+```
 
-You can also embed plots, for example:
+    ## No. 1 
+    ## No. 2 
+    ## No. 3 
+    ## No. 4 
+    ## No. 5 
+    ## No. 6 
+    ## No. 7 
+    ## No. 8 
+    ## No. 9 
+    ## No. 10
 
-![](sub21_v2_files/figure-gfm/pressure-1.png)<!-- -->
+### Tips: 空箱をつくる
 
-Note that the `echo = FALSE` parameter was added to the code chunk to
-prevent printing of the R code that generated the plot.
+繰り返し構文で出力したデータを1つにまとめて保存したい場合，予め「空箱」を作っておくと便利です．
+
+``` r
+## 空箱を作る ##
+numbers <- rep(NA, 10) # NA 10個からなるベクトル
+
+## 繰り返し ##
+for(i in 1:10){
+  numbers[i] <- paste(i) # ベクトルnumbers の第i成分にiを代入
+}
+
+## 中身を確認 ##
+numbers
+```
+
+    ##  [1] "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10"
+
+ここで，`rep()`はリピートを表す関数です．上の例では欠損`NA`10個からなるベクトルを生成しています．
+
+## 1-2 条件分岐
+
+条件分岐もデータハンドリングでよく使われる構文です．`if`の直後の`()`には何らかの条件をいれ，真`TRUE`であれば`{}`内のコマンドが実行され，偽`FALSE`であれば`{}`内のコマンドはスキップされます．
+
+``` r
+if( 条件 ){
+  コマンド 
+  コマンド
+  コマンド
+} 
+```
+
+複数の条件を順に分岐させたい場合は`else if(){}`や`else{}`を使います．条件が満たされない場合は次の分岐へと引き渡され，この手順が繰り返されます．どの条件も満たさない場合のコマンドは`else {}`で指定します．
+
+``` r
+if( 条件 1 ){
+  コマンド 1
+} else if( 条件 2){
+  コマンド 2
+} else if( 条件 3) {
+  コマンド 3
+} ..... {
+  .....
+} else {
+  コマンド n
+}
+```
+
+たとえば，実数`x`の偶奇を判定するプログラムは次の通り．
+
+``` r
+## x が4のとき ##
+x <- 4
+if(x %% 2 == 0){ # x %% 2 は「xを2で割った余り」を表す
+  cat(x, 'は偶数', sep ='')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+```
+
+    ## 4は偶数
+
+``` r
+## x が43のとき ##
+x <- 43
+if(x %% 2 == 0){
+  cat(x, 'は偶数', sep = '')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+```
+
+    ## 43は奇数
+
+``` r
+## x が円周率のとき ##
+x <- pi
+if(x %% 2 == 0){
+  cat(x, 'は偶数', sep = '')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+```
+
+    ## 3.141593は整数ではない
+
+# 2. dplyr入門
+
+## 2-1 準備
+
+### dplyrとは?
+
+`dplyr`はデータフレームを効率良く処理するためのパッケージです．`tidyverse`の中に入っています．
+
+``` r
+## 新規パッケージをインストール ##
+install.packages('tidyverse')
+
+## パッケージを呼び出す ##
+library(tidyverse)
+```
+
+`tidyverse`は`dplyr`の他にも`ggplot2`などの便利なパッケージがたくさん入ってます．`dplyr`だけを使用したい場合は以下のコマンドでOKです．
+
+``` r
+library(dplyr)
+```
+
+### dplyrの文法
+
+パイプ`%>%`を用いて操作途中の結果を次の操作へ渡すこと点が特徴的です．例えば，
+
+``` r
+df %>% 
+  コマンド 1 %>% 
+  コマンド 2 %>% 
+  コマンド 3 ...
+```
+
+上の例ではデータフレーム`df`に対して`コマンド 1`, `コマンド 2`,
+…を順に実行していきます．特に`df`を操作して`df_new`へと変換する場合は次のようなコードになります．
+
+``` r
+df_new <- df %>% 
+  コマンド 1 %>% 
+  コマンド 2 %>% 
+  コマンド 3 ...
+```
+
+上のコードでは「`df`に`コマンド 1`, `コマンド 2`,
+…を実行したもの」を`df_new`に代入しています．
+
+## 2-2 使用データ
+
+パッケージ`ggplot2`から`mpg`という自動車に関するデータを取得します．
+
+``` r
+## データの取得 ##
+data(mpg, package = "ggplot2")
+
+## 最初の6行を確認 ##
+head(mpg)
+```
+
+    ## # A tibble: 6 x 11
+    ##   manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class 
+    ##   <chr>        <chr> <dbl> <int> <int> <chr>      <chr> <int> <int> <chr> <chr> 
+    ## 1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compa~
+    ## 2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compa~
+    ## 3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compa~
+    ## 4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compa~
+    ## 5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compa~
+    ## 6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compa~
+
+``` r
+## 列名を確認 ##
+colnames(mpg)
+```
+
+    ##  [1] "manufacturer" "model"        "displ"        "year"         "cyl"         
+    ##  [6] "trans"        "drv"          "cty"          "hwy"          "fl"          
+    ## [11] "class"
+
+## 2-3 dplyrを使ったデータフレーム処理
+
+データフレームに様々な処理を行ってみましょう．
+
+### select(): 列(変数)の選択
+
+`select()`は列を選択する関数です．最初の引数はデータ，2番目以降の引数は列名です．
+
+``` r
+mpg_new <- select(mpg, manufacturer, model)
+
+# 確認
+head(mpg_new)
+```
+
+    ## # A tibble: 6 x 2
+    ##   manufacturer model
+    ##   <chr>        <chr>
+    ## 1 audi         a4   
+    ## 2 audi         a4   
+    ## 3 audi         a4   
+    ## 4 audi         a4   
+    ## 5 audi         a4   
+    ## 6 audi         a4
+
+`dplyr`などの`tidyverse`に含まれるパッケージのコマンドの多くは最初の引数でデータを指定します．データの指定はパイプ`%>%`を使って省略できます．次の例では`select()`の最初の引数`mpg`がパイプ`%>%`によって引き継がれています．
+
+``` r
+mpg_new <- mpg %>% 
+  select(manufacturer, model)
+
+# 確認
+head(mpg_new)
+```
+
+    ## # A tibble: 6 x 2
+    ##   manufacturer model
+    ##   <chr>        <chr>
+    ## 1 audi         a4   
+    ## 2 audi         a4   
+    ## 3 audi         a4   
+    ## 4 audi         a4   
+    ## 5 audi         a4   
+    ## 6 audi         a4
+
+列名ではなく列番号でも指定できます．
+
+``` r
+mpg_new <- mpg %>% 
+  select(1, 4, 3)
+
+# 確認
+head(mpg_new)
+```
+
+    ## # A tibble: 6 x 3
+    ##   manufacturer  year displ
+    ##   <chr>        <int> <dbl>
+    ## 1 audi          1999   1.8
+    ## 2 audi          1999   1.8
+    ## 3 audi          2008   2  
+    ## 4 audi          2008   2  
+    ## 5 audi          1999   2.8
+    ## 6 audi          1999   2.8
+
+### filter(): 行(観測)の選択
+
+`filter()`は行を選択します．引数は何らかの条件です．
+
+``` r
+mpg_new <- mpg %>% 
+  filter(year == 1999)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 11
+    ##    manufacturer model     displ  year   cyl trans  drv     cty   hwy fl    class
+    ##    <chr>        <chr>     <dbl> <int> <int> <chr>  <chr> <int> <int> <chr> <chr>
+    ##  1 audi         a4          1.8  1999     4 auto(~ f        18    29 p     comp~
+    ##  2 audi         a4          1.8  1999     4 manua~ f        21    29 p     comp~
+    ##  3 audi         a4          2.8  1999     6 auto(~ f        16    26 p     comp~
+    ##  4 audi         a4          2.8  1999     6 manua~ f        18    26 p     comp~
+    ##  5 audi         a4 quatt~   1.8  1999     4 manua~ 4        18    26 p     comp~
+    ##  6 audi         a4 quatt~   1.8  1999     4 auto(~ 4        16    25 p     comp~
+    ##  7 audi         a4 quatt~   2.8  1999     6 auto(~ 4        15    25 p     comp~
+    ##  8 audi         a4 quatt~   2.8  1999     6 manua~ 4        17    25 p     comp~
+    ##  9 audi         a6 quatt~   2.8  1999     6 auto(~ 4        15    24 p     mids~
+    ## 10 chevrolet    c1500 su~   5.7  1999     8 auto(~ r        13    17 r     suv
+
+次のように複数のコマンドを組み合わせて使用することも可能です(それこそが`tidyverse`の醍醐味です)．
+
+``` r
+mpg_new <- mpg %>% 
+  filter(year == 1999, manufacturer == 'toyota') %>% 
+  select(manufacturer, model, displ, year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 4
+    ##    manufacturer model        displ  year
+    ##    <chr>        <chr>        <dbl> <int>
+    ##  1 toyota       4runner 4wd    2.7  1999
+    ##  2 toyota       4runner 4wd    2.7  1999
+    ##  3 toyota       4runner 4wd    3.4  1999
+    ##  4 toyota       4runner 4wd    3.4  1999
+    ##  5 toyota       camry          2.2  1999
+    ##  6 toyota       camry          2.2  1999
+    ##  7 toyota       camry          3    1999
+    ##  8 toyota       camry          3    1999
+    ##  9 toyota       camry solara   2.2  1999
+    ## 10 toyota       camry solara   2.2  1999
+
+### group_by()/ungroup(): グループ化/解除
+
+`group_by()`はデータセットをグループ化するコマンドです．次の例では変数`year`ごとにグループ化しています．
+
+``` r
+mpg_new <- mpg %>% 
+  group_by(year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 11
+    ## # Groups:   year [2]
+    ##    manufacturer model    displ  year   cyl trans   drv     cty   hwy fl    class
+    ##    <chr>        <chr>    <dbl> <int> <int> <chr>   <chr> <int> <int> <chr> <chr>
+    ##  1 audi         a4         1.8  1999     4 auto(l~ f        18    29 p     comp~
+    ##  2 audi         a4         1.8  1999     4 manual~ f        21    29 p     comp~
+    ##  3 audi         a4         2    2008     4 manual~ f        20    31 p     comp~
+    ##  4 audi         a4         2    2008     4 auto(a~ f        21    30 p     comp~
+    ##  5 audi         a4         2.8  1999     6 auto(l~ f        16    26 p     comp~
+    ##  6 audi         a4         2.8  1999     6 manual~ f        18    26 p     comp~
+    ##  7 audi         a4         3.1  2008     6 auto(a~ f        18    27 p     comp~
+    ##  8 audi         a4 quat~   1.8  1999     4 manual~ 4        18    26 p     comp~
+    ##  9 audi         a4 quat~   1.8  1999     4 auto(l~ 4        16    25 p     comp~
+    ## 10 audi         a4 quat~   2    2008     4 manual~ 4        20    28 p     comp~
+
+左上の”Groups:“を見ると`year`によってちゃんとグループが作られているのが確認できます．でも実はグループ化しただけではデータは何も変わりません．グループ化は以降のセクションで紹介する`summarize()`や`mutate()`と組み合わせることで初めて効力を発揮します．  
+複数の変数でグループ化することもできます．次の例では企業×年度をグループとしています．
+
+``` r
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 11
+    ## # Groups:   manufacturer, year [2]
+    ##    manufacturer model    displ  year   cyl trans   drv     cty   hwy fl    class
+    ##    <chr>        <chr>    <dbl> <int> <int> <chr>   <chr> <int> <int> <chr> <chr>
+    ##  1 audi         a4         1.8  1999     4 auto(l~ f        18    29 p     comp~
+    ##  2 audi         a4         1.8  1999     4 manual~ f        21    29 p     comp~
+    ##  3 audi         a4         2    2008     4 manual~ f        20    31 p     comp~
+    ##  4 audi         a4         2    2008     4 auto(a~ f        21    30 p     comp~
+    ##  5 audi         a4         2.8  1999     6 auto(l~ f        16    26 p     comp~
+    ##  6 audi         a4         2.8  1999     6 manual~ f        18    26 p     comp~
+    ##  7 audi         a4         3.1  2008     6 auto(a~ f        18    27 p     comp~
+    ##  8 audi         a4 quat~   1.8  1999     4 manual~ 4        18    26 p     comp~
+    ##  9 audi         a4 quat~   1.8  1999     4 auto(l~ 4        16    25 p     comp~
+    ## 10 audi         a4 quat~   2    2008     4 manual~ 4        20    28 p     comp~
+
+グループを解除したいときは`ungroup()`を指定します．先ほどのグループを解除してみましょう．
+
+``` r
+mpg_new <- mpg_new %>% 
+  ungroup()
+
+# 確認
+head(mpg_new)
+```
+
+    ## # A tibble: 6 x 11
+    ##   manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class 
+    ##   <chr>        <chr> <dbl> <int> <int> <chr>      <chr> <int> <int> <chr> <chr> 
+    ## 1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compa~
+    ## 2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compa~
+    ## 3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compa~
+    ## 4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compa~
+    ## 5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compa~
+    ## 6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compa~
+
+左上に”Groups:“という欄がないのでグループが解除されたことが確認できます．
+
+### summarize(): 集計
+
+先ほど説明した`group()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．
+
+``` r
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(displ_mean = mean(displ)) %>% 
+  ungroup()
+```
+
+    ## `summarise()` regrouping output by 'manufacturer' (override with `.groups` argument)
+
+``` r
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 3
+    ##    manufacturer  year displ_mean
+    ##    <chr>        <int>      <dbl>
+    ##  1 audi          1999       2.36
+    ##  2 audi          2008       2.73
+    ##  3 chevrolet     1999       4.97
+    ##  4 chevrolet     2008       5.12
+    ##  5 dodge         1999       4.32
+    ##  6 dodge         2008       4.42
+    ##  7 ford          1999       4.45
+    ##  8 ford          2008       4.66
+    ##  9 honda         1999       1.6 
+    ## 10 honda         2008       1.85
+
+上の例では各グループごとに変数`displ`を平均して集計しましたが，単純に観測数を数えたい場合は`n()`を使用します．
+
+``` r
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(count = n()) %>% 
+  ungroup()
+```
+
+    ## `summarise()` regrouping output by 'manufacturer' (override with `.groups` argument)
+
+``` r
+# 確認
+head(mpg_new, n = 10)
+```
+
+    ## # A tibble: 10 x 3
+    ##    manufacturer  year count
+    ##    <chr>        <int> <int>
+    ##  1 audi          1999     9
+    ##  2 audi          2008     9
+    ##  3 chevrolet     1999     7
+    ##  4 chevrolet     2008    12
+    ##  5 dodge         1999    16
+    ##  6 dodge         2008    21
+    ##  7 ford          1999    15
+    ##  8 ford          2008    10
+    ##  9 honda         1999     5
+    ## 10 honda         2008     4
+
+### mutate(): 新しい変数作成
+
+`mutate()`は新しい変数を作成するコマンドです．次の例は`cty`の自然対数を`ln_cty`という新しい変数として作成しています．
+
+``` r
+mpg_new <- mpg %>% 
+  mutate(ln_cty = log(cty))
+
+# 確認
+mpg_new %>% 
+  select(cty, ln_cty) %>% 
+  head()
+```
+
+    ## # A tibble: 6 x 2
+    ##     cty ln_cty
+    ##   <int>  <dbl>
+    ## 1    18   2.89
+    ## 2    21   3.04
+    ## 3    20   3.00
+    ## 4    21   3.04
+    ## 5    16   2.77
+    ## 6    18   2.89
+
+`mutate()`は先ほど説明した`group()`と組み合わせて使用すると便利なときがあります．
+
+``` r
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  mutate(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# 確認
+mpg_new %>% 
+  select(manufacturer, model, year, displ_mean)
+```
+
+    ## # A tibble: 234 x 4
+    ##    manufacturer model       year displ_mean
+    ##    <chr>        <chr>      <int>      <dbl>
+    ##  1 audi         a4          1999       2.36
+    ##  2 audi         a4          1999       2.36
+    ##  3 audi         a4          2008       2.73
+    ##  4 audi         a4          2008       2.73
+    ##  5 audi         a4          1999       2.36
+    ##  6 audi         a4          1999       2.36
+    ##  7 audi         a4          2008       2.73
+    ##  8 audi         a4 quattro  1999       2.36
+    ##  9 audi         a4 quattro  1999       2.36
+    ## 10 audi         a4 quattro  2008       2.73
+    ## # ... with 224 more rows
+
+グループ化したデータにおける`mutate()`と`summarize()`の違いは行数を確認すれば一目瞭然です．
+
+``` r
+# summarize() ver
+mpg_summarize <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(displ_mean = mean(displ)) %>% 
+  ungroup()
+```
+
+    ## `summarise()` regrouping output by 'manufacturer' (override with `.groups` argument)
+
+``` r
+# mutate() ver
+mpg_mutate <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  mutate(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# 行数(観測数) を確認
+nrow(mpg) ; nrow(mpg_summarize) ; nrow(mpg_mutate)
+```
+
+    ## [1] 234
+
+    ## [1] 30
+
+    ## [1] 234
+
+### pivot\_\*()：wide型からlong型への変換
+
+次回
+
+### arrange()：行の並び替え
+
+次回
+
+### distinct(): 重複行の操作
+
+次回
+
+### \*\_join(): データフレームの結合
+
+次回
