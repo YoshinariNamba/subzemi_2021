@@ -1,7 +1,7 @@
 2021 Lec 11: Data Handling
 ================
 Yoshinari Namba
-2021/6/22
+update: 2021/6/24
 
 # 1. 繰り返し・条件分岐
 

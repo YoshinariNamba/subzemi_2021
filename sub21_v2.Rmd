@@ -1,7 +1,7 @@
 ---
 title: '2021 Lec 11: Data Handling'
 author: "Yoshinari Namba"
-date: "2021/6/22"
+date: "update: 2021/6/24"
 output: 
   github_document:
     pandoc_args: --webtex
