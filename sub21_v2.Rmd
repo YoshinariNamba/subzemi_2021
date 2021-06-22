@@ -11,22 +11,335 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# 1. 繰り返し・条件分岐
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## 1-1 繰り返し構文
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+データを加工する際，変更箇所の少ない演算を何度も繰り返し行うことがあります．
+そんなときに便利なのが`for`を使った繰り返し構文です．
+```{r for_ex0, eval=FALSE}
+for(i in 範囲){
+  コマンド 1
+  コマンド 2
+  コマンド 3
+}
 ```
 
-## Including Plots
+ここで，`i`は繰り返しを制御する文字です．「`i`が`範囲`内の値を順番に取ったときに～というコマンドを実行する」という指令を出しています．例を見てみましょう．No.1からNo.10を出力したいときには次のようなコードで実行できます．文字を出力したいときは`cat()`関数が便利です．引数は出力したい文字です．`"\n"`で改行を指定します．
 
-You can also embed plots, for example:
+```{r for_ex1}
+for(i in 1:10){
+  cat("No.", i, "\n") # No. i を出力して改行
+}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+### Tips: 空箱をつくる
+繰り返し構文で出力したデータを1つにまとめて保存したい場合，予め「空箱」を作っておくと便利です．
+```{r for_ex3}
+## 空箱を作る ##
+numbers <- rep(NA, 10) # NA 10個からなるベクトル
+
+## 繰り返し ##
+for(i in 1:10){
+  numbers[i] <- paste(i) # ベクトルnumbers の第i成分にiを代入
+}
+
+## 中身を確認 ##
+numbers
+```
+
+ここで，`rep()`はリピートを表す関数です．上の例では欠損`NA`10個からなるベクトルを生成しています．
+
+
+
+## 1-2 条件分岐
+
+条件分岐もデータハンドリングでよく使われる構文です．`if`の直後の`()`には何らかの条件をいれ，真`TRUE`であれば`{}`内のコマンドが実行され，偽`FALSE`であれば`{}`内のコマンドはスキップされます．
+
+```{r if_ex0, eval=FALSE}
+if( 条件 ){
+  コマンド 
+  コマンド
+  コマンド
+} 
+```
+
+複数の条件を順に分岐させたい場合は`else if(){}`や`else{}`を使います．条件が満たされない場合は次の分岐へと引き渡され，この手順が繰り返されます．どの条件も満たさない場合のコマンドは`else {}`で指定します．
+
+```{r if_ex1, eval=FALSE}
+if( 条件 1 ){
+  コマンド 1
+} else if( 条件 2){
+  コマンド 2
+} else if( 条件 3) {
+  コマンド 3
+} ..... {
+  .....
+} else {
+  コマンド n
+}
+```
+
+
+たとえば，実数`x`の偶奇を判定するプログラムは次の通り．
+
+```{r if_ex2}
+## x が4のとき ##
+x <- 4
+if(x %% 2 == 0){ # x %% 2 は「xを2で割った余り」を表す
+  cat(x, 'は偶数', sep ='')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+
+## x が43のとき ##
+x <- 43
+if(x %% 2 == 0){
+  cat(x, 'は偶数', sep = '')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+
+## x が円周率のとき ##
+x <- pi
+if(x %% 2 == 0){
+  cat(x, 'は偶数', sep = '')
+} else if(x %% 2 == 1){
+  cat(x, 'は奇数', sep = '')
+} else{
+  cat(x, 'は整数ではない', sep = '')
+}
+
+
+```
+
+
+# 2. dplyr入門
+
+## 2-1 準備
+### dplyrとは?
+`dplyr`はデータフレームを効率良く処理するためのパッケージです．`tidyverse`の中に入っています．
+```{r tidyverse_install, eval=FALSE}
+## 新規パッケージをインストール ##
+install.packages('tidyverse')
+
+## パッケージを呼び出す ##
+library(tidyverse)
+```
+
+`tidyverse`は`dplyr`の他にも`ggplot2`などの便利なパッケージがたくさん入ってます．`dplyr`だけを使用したい場合は以下のコマンドでOKです．
+```{r dplyr_install, eval=FALSE}
+library(dplyr)
+```
+
+
+```{r dplyr_library, include=FALSE}
+library(tidyverse)
+```
+
+### dplyrの文法
+パイプ` %>% `を用いて操作途中の結果を次の操作へ渡すこと点が特徴的です．例えば，
+```{r dplyr_howto, eval = FALSE}
+df %>% 
+  コマンド 1 %>% 
+  コマンド 2 %>% 
+  コマンド 3 ...
+```
+上の例ではデータフレーム`df`に対して`コマンド 1`, `コマンド 2`, ...を順に実行していきます．特に`df`を操作して`df_new`へと変換する場合は次のようなコードになります．
+```{r dplyr_howto_new, eval=FALSE}
+df_new <- df %>% 
+  コマンド 1 %>% 
+  コマンド 2 %>% 
+  コマンド 3 ...
+```
+
+上のコードでは「`df`に`コマンド 1`, `コマンド 2`, ...を実行したもの」を`df_new`に代入しています．
+
+## 2-2 使用データ
+```{r df_ed, eval=FALSE, include=FALSE}
+df_ed <- data.frame(id = c("1", "2"), wage16 = c(3000, 2000), 
+                    wage17 = c(3100, 2200), ed16 = c(16, 12), ed17 = c(16, 12), 
+                    industry16 = c("service", "manufacturer"), 
+                    industry17 = c("finance", "manufacturer"))
+df_ed
+
+```
+パッケージ`ggplot2`から`mpg`という自動車に関するデータを取得します．
+```{r df_mtcars}
+## データの取得 ##
+data(mpg, package = "ggplot2")
+
+## 最初の6行を確認 ##
+head(mpg)
+
+## 列名を確認 ##
+colnames(mpg)
+```
+
+## 2-3 dplyrを使ったデータフレーム処理
+データフレームに様々な処理を行ってみましょう．
+
+
+### select(): 列(変数)の選択
+`select()`は列を選択する関数です．最初の引数はデータ，2番目以降の引数は列名です．
+```{r select0}
+mpg_new <- select(mpg, manufacturer, model)
+
+# 確認
+head(mpg_new)
+```
+
+`dplyr`などの`tidyverse`に含まれるパッケージのコマンドの多くは最初の引数でデータを指定します．データの指定はパイプ` %>% `を使って省略できます．次の例では`select()`の最初の引数`mpg`がパイプ` %>% `によって引き継がれています．
+```{r select1}
+mpg_new <- mpg %>% 
+  select(manufacturer, model)
+
+# 確認
+head(mpg_new)
+
+```
+
+列名ではなく列番号でも指定できます．
+```{r select2}
+mpg_new <- mpg %>% 
+  select(1, 4, 3)
+
+# 確認
+head(mpg_new)
+
+```
+
+### filter(): 行(観測)の選択
+`filter()`は行を選択します．引数は何らかの条件です．
+```{r filter1}
+mpg_new <- mpg %>% 
+  filter(year == 1999)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+次のように複数のコマンドを組み合わせて使用することも可能です(それこそが`tidyverse`の醍醐味です)．
+```{r filter2}
+mpg_new <- mpg %>% 
+  filter(year == 1999, manufacturer == 'toyota') %>% 
+  select(manufacturer, model, displ, year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+
+### group_by()/ungroup(): グループ化/解除
+`group_by()`はデータセットをグループ化するコマンドです．次の例では変数`year`ごとにグループ化しています．
+```{r group1}
+mpg_new <- mpg %>% 
+  group_by(year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+左上の"Groups:"を見ると`year`によってちゃんとグループが作られているのが確認できます．でも実はグループ化しただけではデータは何も変わりません．グループ化は以降のセクションで紹介する`summarize()`や`mutate()`と組み合わせることで初めて効力を発揮します．  
+複数の変数でグループ化することもできます．次の例では企業×年度をグループとしています．
+```{r group2}
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year)
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+グループを解除したいときは`ungroup()`を指定します．先ほどのグループを解除してみましょう．
+```{r group3}
+mpg_new <- mpg_new %>% 
+  ungroup()
+
+# 確認
+head(mpg_new)
+```
+左上に"Groups:"という欄がないのでグループが解除されたことが確認できます．
+
+
+### summarize(): 集計
+先ほど説明した`group()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．
+```{r summarize1}
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# 確認
+head(mpg_new, n = 10)
+```
+上の例では各グループごとに変数`displ`を平均して集計しましたが，単純に観測数を数えたい場合は`n()`を使用します．
+```{r summarize1_count}
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(count = n()) %>% 
+  ungroup()
+
+# 確認
+head(mpg_new, n = 10)
+```
+
+### mutate(): 新しい変数作成
+`mutate()`は新しい変数を作成するコマンドです．次の例は`cty`の自然対数を`ln_cty`という新しい変数として作成しています．
+```{r mutate1}
+mpg_new <- mpg %>% 
+  mutate(ln_cty = log(cty))
+
+# 確認
+mpg_new %>% 
+  select(cty, ln_cty) %>% 
+  head()
+```
+
+`mutate()`は先ほど説明した`group()`と組み合わせて使用すると便利なときがあります．
+```{r mutate2}
+mpg_new <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  mutate(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# 確認
+mpg_new %>% 
+  select(manufacturer, model, year, displ_mean)
+```
+
+グループ化したデータにおける`mutate()`と`summarize()`の違いは行数を確認すれば一目瞭然です．
+```{r mutate_summrize}
+# summarize() ver
+mpg_summarize <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  summarize(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# mutate() ver
+mpg_mutate <- mpg %>% 
+  group_by(manufacturer, year) %>% 
+  mutate(displ_mean = mean(displ)) %>% 
+  ungroup()
+
+# 行数(観測数) を確認
+nrow(mpg) ; nrow(mpg_summarize) ; nrow(mpg_mutate)
+
+```
+
+### pivot_*()：wide型からlong型への変換
+次回
+
+### arrange()：行の並び替え
+次回
+
+### distinct(): 重複行の操作
+次回
+
+### *_join(): データフレームの結合
+次回
