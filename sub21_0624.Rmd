@@ -18,21 +18,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 0. Setup & Agenda
 
-## 準備1: データ
+## 準備1: Rプロジェクト
+RStudioを開いて右上のタブの File -> New Project から新規プロジェクトを作成してくおいてください．
 
-今日は以下のデータを使用します．コピペして実行しておいてください．
+## 準備2: データ
+今日は以下のデータを使用します．Rプロジェクトが作成出来たら，コードをコピペして実行しておいてください．
 
 ```{r todays_data}
 # 今日使うデータの作成
-df_score <- data.frame(name = c('生徒C', '生徒A', '生徒B', '生徒A'), 
-                 class_size = c('small', 'large', 'small', 'large'), 
-                 math_score = c(80, 70, 75, 70), 
-                 eng_score = c(70, 75, 80, 75))
+df_score <- data.frame(name = c('生徒C', '生徒A', '生徒B', '生徒A'), # 生徒名
+                 class_size = c('small', 'large', 'small', 'large'), # 学級規模
+                 math_score = c(80, NA, 75, 70),                     # 数学の点数
+                 eng_score = c(70, 75, 80, 75))                      # 英語の点数
 # 確認
 df_score
 ```
 
-## 準備2: パッケージ
+## 準備3: パッケージ
 今日も`tidyverse`を使用します．インストールが済んでいない人は先ず`install.packages('tidyverse')`を実行してくださいね．
 
 ```{r library_tidyverse}
@@ -46,9 +48,10 @@ library(tidyverse)
 2. 文字列の操作  
 3. グループワーク  
 
-# 1. データ整理
+# 1. tidyverseでデータ整理
 
-前回は主に`dplyr`を使った行列の扱い方や集計方法を学びました．今回は前回の続きです．  
+## 1-1 ふりかえり
+前回は主に`dplyr`を使った行列の扱い方や集計方法を学びました．今回はその続きです．  
 まずは復習がてら前回のグループワークの答えを確認したいと思います．
 
 ```{r recap}
@@ -69,12 +72,67 @@ df_review_ans <- df_review %>%
 # 確認
 head(df_review_ans) 
 ```
-ちなみに去年の三田論教育班は次のような分析を行いました(実際はパネルデータを使ったり学歴ミスマッチの定義の別の定義の仕方も試していたりするのでもう少し複雑です)．
+パイプ` %>% `の意味を思い出しておいてくださいね．上の例では`df_review`を次の行のコマンドの第1引数に渡しています．  
+ちなみに去年の
+[三田論教育班](https://43c49aa2-d9d5-427b-b96b-9dc3dd5a6113.filesusr.com/ugd/a2f719_ede0c36e7b5742dabc5e980cd0503287.pdf)
+は次のような分析を行いました(実際はパネルデータを使ったり学歴ミスマッチの別の定義でも試していたりするのでもう少し複雑です)．
 ```{r education_regression}
 out_educ <- lm(data = df_review_ans, 
                log(wage) ~ ad_educ + un_educ + ov_educ + exper + I(exper^2) + female + married)
 summary(out_educ)
 ```
+
+## 1-2 並び替え: arrange()
+データの観測を並び替えたいときは`dplyr::arrange()`を使います．ちなみに`X::Y()`というのは「`X`パッケージに入っている`Y()`という関数」という意味です．今回は様々なパッケージを使用しますが，全部`tidyverse`の中に入っているのでそれほど気にしなくて良いです．  
+さて，もう一度データ`df_score`を見てみましょう．生徒名の順番がごちゃごちゃで気持ち悪いですね...
+```{r df_score_name_order}
+# 確認
+df_score
+```
+`name`の順番を昇順にしたいとき，次のようなコードを書きます．
+```{r increase}
+df_score %>% 
+  arrange(name)
+```
+降順にしたいときも`arrange()`を使いますが，`desc()`と組み合わせて使うことになります．
+```{r decrease}
+df_score %>% 
+  arrange(desc(name))
+```
+
+もちろん`name`以外の変数でも昇順・降順に並べ替えられます．値が数値の場合，`-`を付け加えることで降順を指定できます．また，複数の変数を指定した場合は最初に指定した変数が同じ値の観測(行)について2番目に指定した変数の昇降で並べます．
+```{r other_than_name}
+# 数値の降順は -を付けるだけで良い
+df_score %>% 
+  arrange(-eng_score)
+
+# 複数の変数を指定
+df_score %>% 
+  arrange(eng_score, math_score)
+```
+
+## 重複行の処理: distinct()
+取得したデータには何らかの理由で「1つの観測主体に対して2つ以上の観測が含まれている」ときがあります．そのような状況でよく使うのが`distinct()`です．もう一度`df_score`を見てみましょう．
+```{r df_score_double}
+df_score
+```
+生徒Aが2回含まれているのが確認できます．複数回登場する観測のうちどれか1つを抽出したい場合に`distinct()`を使います．引数は変数です．今回は観測主体は生徒であると考えて`name`を入れます．ただし，そのままだと`name`列だけが出力されてしまうので，`.keep_all`を`TRUE`にすることで，`name`以外の引数も残します．
+```{r distinct_1}
+df_score %>% 
+  distinct(name, .keep_all = TRUE) # .keep_all = TRUE でname以外の列も残す
+```
+生徒Aの重複を解消することに成功しましたね．でも残った観測には`NA`が含まれてしまってる...  
+実は`distinct()`は重複行の最初の行を残して2番目以降を削除するので，重複行の2番目以降のどれかを残したいときにはそのまま使うべきではありません．この場合に便利なのが先ほど学んだ`arrange()`です．なぜなら，昇順で`NA`は必ず最後に来るからです．
+```{r distinct_arrange}
+df_score %>% 
+  arrange(name, class_size, math_score, eng_score) %>% 
+  distinct(name, .keep_all = TRUE)
+```
+
+## wide型->long型変換: pivot_longer()
+実は`df_score`は前回に説明した「整ったデータ(tidy data)」とは言えません．なぜでしょうか？
+
+
 
 
 
