@@ -1,0 +1,82 @@
+---
+title: "2021年度 サブゼミ 第11回 データハンドリング2"
+author: "Yoshinari Namba"
+date: "2021/6/24"
+output: 
+  github_document:
+    pandoc_args: --webtex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+データハンドリングの第2回目です．
+---
+
+
+# 0. Setup & Agenda
+
+## 準備1: データ
+
+今日は以下のデータを使用します．コピペして実行しておいてください．
+
+```{r todays_data}
+# 今日使うデータの作成
+df_score <- data.frame(name = c('生徒C', '生徒A', '生徒B', '生徒A'), 
+                 class_size = c('small', 'large', 'small', 'large'), 
+                 math_score = c(80, 70, 75, 70), 
+                 eng_score = c(70, 75, 80, 75))
+# 確認
+df_score
+```
+
+## 準備2: パッケージ
+今日も`tidyverse`を使用します．インストールが済んでいない人は先ず`install.packages('tidyverse')`を実行してくださいね．
+
+```{r library_tidyverse}
+# tidyverseの呼び出し
+library(tidyverse)
+```
+
+## Agenda
+今日のAgendaは次の通りです．
+1. データ整理(続き)
+2. 文字列の操作
+3. グループワーク
+
+# 1. データ整理
+
+前回は主に`dplyr`を使った行列の扱い方や集計方法を学びました．今回は前回の続きです．  
+まずは復習がてら前回のグループワークの答えを確認したいと思います．
+
+```{r recap}
+# データの取り込み
+df_review <- read.csv('wage1_editted.csv')
+head(df_review) # 確認
+
+# 教育過剰・教育過少を作成
+df_review_ans <- df_review %>% 
+  group_by(industry) %>% # 職業区分industry でグループ化
+  mutate(ad_educ = mean(educ)) %>% # 適正教育年数 ad_educを定義
+  ungroup() %>% #グループ解除
+  mutate(ov_educ = ifelse(educ - ad_educ > 0, educ - ad_educ, 0), # 教育過剰年数 ov_educを定義
+         un_educ = ifelse(educ - ad_educ < 0, ad_educ - educ, 0)) # 教育過少年数 un_educを定義
+head(df_review_ans) #確認
+```
+ちなみに去年の三田論教育班は次のような分析を行いました(実際はパネルデータを使ったり学歴ミスマッチの定義の別の定義の仕方も試していたりするのでもう少し複雑です)．
+```{r education_regression}
+out_educ <- lm(data = df_review_ans, 
+               log(wage) ~ ad_educ + un_educ + ov_educ + exper + I(exper^2) + female + married)
+summary(out_educ)
+```
+
+
+
+
+
+
+
+
+
