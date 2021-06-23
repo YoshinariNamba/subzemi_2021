@@ -26,10 +26,10 @@ RStudioを開いて右上のタブの File -> New Project から新規プロジ�
 
 ```{r todays_data}
 # 今日使うデータの作成
-df_score <- data.frame(name = c('生徒C', '生徒A', '生徒B', '生徒A'), # 生徒名
-                 class_size = c('small', 'large', 'small', 'large'), # 学級規模
-                 math_score = c(80, NA, 75, 70),                     # 数学の点数
-                 eng_score = c(70, 75, 80, 75))                      # 英語の点数
+df_score <- data.frame(name = c('生徒C', '生徒A', '生徒B', '生徒A'),       # 生徒名
+                       class_size = c('small', 'large', 'small', 'large'), # 学級規模
+                       math_score = c(80, NA, 75, 70),                     # 数学の点数
+                       english_score = c(70, 75, 80, 75))                  # 英語の点数
 # 確認
 df_score
 ```
@@ -104,11 +104,11 @@ df_score %>%
 ```{r other_than_name}
 # 数値の降順は -を付けるだけで良い
 df_score %>% 
-  arrange(-eng_score)
+  arrange(-english_score)
 
 # 複数の変数を指定
 df_score %>% 
-  arrange(eng_score, math_score)
+  arrange(english_score, math_score)
 ```
 
 ## 1-2 重複行の処理: distinct()
@@ -125,7 +125,7 @@ df_score %>%
 実は`distinct()`は重複行の最初の行を残して2番目以降を削除するので，重複行の2番目以降のどれかを残したいときにはそのまま使うべきではありません．この場合に便利なのが先ほど学んだ`arrange()`です．なぜなら，昇順で`NA`は必ず最後に来るからです．
 ```{r distinct_arrange}
 df_score %>% 
-  arrange(name, class_size, math_score, eng_score) %>% 
+  arrange(name, class_size, math_score, english_score) %>% 
   distinct(name, .keep_all = TRUE)
 ```
 
@@ -138,7 +138,7 @@ df_score
 1. 一つの列が一つの変数を表す  
 2. 一つの行が一つの観測を表す  
 3. 一つのセルが一つの値を表す  
-`math_score`や`eng_score`が「教科」と「点数」の2つの意味を含んでしまっていて，`df_score`はTidy Dataとは言えない気が(少なくともぼくは)します．  
+`math_score`や`english_score`が「教科」と「点数」の2つの意味を含んでしまっていて，`df_score`はTidy Dataとは言えない気が(少なくともぼくは)します．  
 `df_score`のようなデータの型をwide型と言います．一方で一つの列が一つの変数を的確に表している型をlong型と言います．wide型かたlong型に変換するためのコマンドが`tidyr::pivot_longer()`です．使い方のイメージは次のようになります．
 ```{r pivot_exp, eval=FALSE}
 データフレーム %>% 
@@ -210,5 +210,57 @@ ifelse(str_detect(vec_chr, pattern = 'パイン'), 'パイナップル', vec_chr
 ```{r str_replace_1}
 str_replace(vec_chr, pattern = 'ン', replacement = 'ナップル')
 ```
+## 2-5 活用例
+文字列を扱う様々な関数を紹介しましたがデータ整形という文脈ではどのように使われるのでしょうか？先ほどの`df_score`を使った例をご紹介します．まずは再度long型へ変換をします．
+```{r str_df_1}
+df_score_longer <- df_score %>% 
+  pivot_longer(cols = -c(name, class_size), names_to = 'subject', values_to = 'score')
+
+# 確認
+df_score_longer
+```
+`subject`の値がすべて`_score`で終わっているのが気持ち悪いので`_`以降を除去します．
+```{r str_df_2}
+df_score_longer %>% 
+  mutate(subject = str_split(.$subject, pattern = '_', simplify = TRUE)[, 1]) 
+```
+ここで，`str_split()`内の"."は` %>% `で引き渡されたデータフレーム`df_score_longer`を表しています ("."によってデータフレーム名を省略できるのが`tidyverse`の強みの一つです)．つまり，上の例の`mutate()`内の`str_split()`は以下のように表されます．
+```{r str_df_3}
+str_split(df_score_longer$subject, pattern = '_', simplify = TRUE)
+```
+この行列の1列目を抽出して
+```{r str_df_4}
+str_split(df_score_longer$subject, pattern = '_', simplify = TRUE)[, 1]
+```
+これを`subject =`に使用すればいいわけですね．
 
 
+# 3. まとめ
+
+## 3-1 今日学んだこと
+今日の学んだコードを一度に実行するとすると次のようになります．
+```{r tidy_model}
+df_score_tidy <- df_score %>% 
+  arrange(name, class_size, math_score, english_score) %>% 
+  distinct(name, .keep_all = TRUE) %>% 
+  pivot_longer(cols = -c(name, class_size), names_to = 'subject', values_to = 'score') %>% 
+  mutate(subject = str_split(.$subject, pattern = '_', simplify = TRUE)[, 1])
+
+# 確認
+df_score_tidy
+```
+たった5行で「整ったデータ」が作れましたね．tidyverse恐るべし．
+
+## 3-2 グループワーク
+グループワークです．下記のコードで作成したデータフレームを「整ったデータ」に変換してください！
+```{r group_work}
+df_gw <- data.frame(name =c("B", "C", "A", "D", "D"), 
+                    educ = c(12, 16, 14, 18, 18), 
+                    entry = c(2015, 2016, 2014, 2015, 2015), 
+                    wage_2016 = c(2000, 3000, 2500, 3500, 3500), 
+                    wage_2017 = c(2100, 3050, 2600, 3550, 3550), 
+                    wage_2018 = c(2110, 3050, 2610, 3550, 3550))
+```
+
+### P.S. 
+R MarkdownやGitHubにも少し慣れてきました．大槻ケンヂの「グミ・チョコレート・パイン」面白いので読んでみてください．
