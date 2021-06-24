@@ -144,7 +144,7 @@ df_score
 `df_score`のようなデータの型をwide型と言います．一方で一つの列が一つの変数を的確に表している型をlong型と言います．wide型かたlong型に変換するためのコマンドが`tidyr::pivot_longer()`です．使い方のイメージは次のようになります．
 ```{r pivot_exp, eval=FALSE}
 データフレーム %>% 
-  pivot_longer(col = - 残したい変数, 
+  pivot_longer(cols = - 残したい変数, 
                names_to = 「セルに入れる変数名」をまとめる変数名, 
                values_to = 変換する変数の値をまとめる変数名)
 ```
@@ -152,7 +152,7 @@ df_score
 これだけだとさっぱりだと思うので，実例で学びましょう．
 ```{r pivot_df_score}
 df_score %>% 
-  pivot_longer(col = - c(name, class_size), names_to = "subject", values_to = "score")
+  pivot_longer(cols = - c(name, class_size), names_to = "subject", values_to = "score")
 ```
 
 例では「残したい変数」が2つあるので，`cols =`はベクトルの形で指定しています．出力データは観測単位が生徒×教科になっていますね．
