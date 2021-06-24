@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # 0. Setup & Agenda
 
 ## 準備1: Rプロジェクト
-RStudioを開いて右上のタブの File -> New Project から新規プロジェクトを作成してくおいてください．
+RStudioを開いて右上のタブの File -> New Project から新規プロジェクトを作成しておいてください．
 
 ## 準備2: データ
 今日は以下のデータを使用します．Rプロジェクトが作成出来たら，コードをコピペして実行しておいてください．
@@ -263,4 +263,4 @@ df_gw <- data.frame(name =c("B", "C", "A", "D", "D"),
 ```
 
 ### P.S. 
-R MarkdownやGitHubにも少し慣れてきました．大槻ケンヂの「グミ・チョコレート・パイン」面白いので読んでみてください．
+R MarkdownやGitHubにも少し慣れてきました．

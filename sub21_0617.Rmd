@@ -120,7 +120,7 @@ if(x %% 2 == 0){
 ```
 
 
-# 2. dplyr入門
+# 2. データ整形 (dplyr入門)
 
 ## 2-1 準備
 ### dplyrとは?
@@ -268,7 +268,7 @@ head(mpg_new)
 
 
 ### summarize(): 集計
-先ほど説明した`group()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．
+先ほど説明した`group_by()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．
 ```{r summarize1}
 mpg_new <- mpg %>% 
   group_by(manufacturer, year) %>% 
@@ -301,7 +301,7 @@ mpg_new %>%
   head()
 ```
 
-`mutate()`は先ほど説明した`group()`と組み合わせて使用すると便利なときがあります．
+`mutate()`は先ほど説明した`group_by()`と組み合わせて使用すると便利なときがあります．
 ```{r mutate2}
 mpg_new <- mpg %>% 
   group_by(manufacturer, year) %>% 
@@ -332,17 +332,6 @@ nrow(mpg) ; nrow(mpg_summarize) ; nrow(mpg_mutate)
 
 ```
 
-### pivot_*()：wide型からlong型への変換
-次回
-
-### arrange()：行の並び替え
-次回
-
-### distinct(): 重複行の操作
-次回
-
-### *_join(): データフレームの結合
-次回
 
 
 
