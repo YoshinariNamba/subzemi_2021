@@ -329,6 +329,8 @@ nrow(mpg) ; nrow(mpg_summarize) ; nrow(mpg_mutate)
 
 ```
 
+### 
+次回もデータハンドリングです
 
 
 
