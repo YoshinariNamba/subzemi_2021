@@ -38,9 +38,7 @@ df_right <- data.frame(id = c('A', 'C', 'D', 'E'),
                        age = c(19, 22, 23, 24),     # 年齢
                        area = c('kanto', 'kanto', 'kinki', 'shikoku')) # 居住地域
 # 確認
-df_left1
-df_left2
-df_right
+df_left1 ; df_left2 ; df_right
 ```
 
 ## 準備3: パッケージ
@@ -93,6 +91,7 @@ merge(df_left1, df_right, by.x = 'name', by.y = 'id')
 ```
 ちなみにキー変数の名前が同じ場合は by のみでOKです．
 ```{r}
+# 変数"name" の名前を "id" に変更
 df_right_tmp <- df_right %>% 
   rename(name = id)
 
@@ -101,19 +100,73 @@ merge(df_left1, df_right_tmp, by = 'name')
 ```
 ここでもう一度結合前のデータを見てみてください．先ほどのマージの仕方だと片方のデータフレームのみで観測されているBさんやCさんが抜け落ちてしまっています．
 ```{r}
-df_left1 ; df_right
+df_left1
+df_right
 ```
-
-
+これらの観測を残してマージしたい場合は`all = TRUE`を指定します．ただし，その観測がない変数の値は`NA`になります．
+```{r}
+# 観測をすべて残す
+merge(df_left1, df_right, by.x = 'name', by.y = 'id', all = TRUE)
+```
+Eさんの`education`と`wage`, Bさんの`age`と`area`が欠損していることを確認してください．  
+片方のデータフレームの観測をすべて残し，もう一方のデータフレームの観測は共通部分のみ取り出すこともできます．
+```{r}
+# 最初のデータフレームの観測はすべて残す
+merge(df_left1, df_right, by.x = 'name', by.y = 'id', all.x = TRUE)
+```
+`df_left1`に含まれるBさんの観測が残っている一方で，`df_right`に含まれるEさんの観測が抜け落ちていることを確認してください．
 
 
 ## 1-2 {dplyr}: *_join()
+`base::merge()`と同様のコマンドが`tidyverse`にもあります．ここでは`dplyr::*_join()`を紹介します．
 
-
-
-# 2. グループワーク
-
-グループワークです．
-```{r group_work, eval=FALSE}
-library(openxlsx)
+### 共通部分のみ残す: inner_join()
+`tidyverse`で`merge(..., all = FALSE)`にあたるのが`inner_join()`です．`by = c('キー変数1' = 'キー変数2')`で紐づけるためのキー変数を指定します．
+```{r}
+df_left1 %>% 
+  inner_join(df_right, by = c('name' = 'id'))
 ```
+` %>% `によってデータが最初の引数へ引き渡されていることを思い出してくださいね．
+
+### すべて残す: full_join()
+すべての観測を残したい場合は`full_join()`を用います.`{base}`で言えば`merge(..., all = TRUE)`と同じですね．
+```{r}
+df_left1 %>% 
+  full_join(df_right, by = c('name' = 'id'))
+```
+
+### 片方の観測のみ残す: left_join(), right_join()
+片方の観測を残したい場合は`left_join()`または`right_join()`を用います．
+```{r}
+df_left1 %>% 
+  left_join(df_right, by = c('name' = 'id'))
+```
+
+
+# 2. グループワーク: 製薬会社のデータを結合・集計しよう！
+グループワークです．2019年三田論製薬班の再現です．（お兄さんにデータを提供していただきました．ありがとうございます！）
+
+## データ
+使用するデータは`inventor.txt`と`pharma_patent.xlsx`です．いずれも特許に関するデータですが，前者は開発者個人の氏名，後者は企業名が観測されています．
+.txtファイルは次のように読み込みます．
+```{r}
+# データの取り込み1: テキストデータ
+df_inventor <- read.table('inventor.txt', header = T, sep = ',')
+
+# 確認
+head(df_inventor)
+```
+
+.xlsxファイルの読み込みには`openxlsx`というパッケージを使用します．まだインストールしていない人は`install.packages(openxlsx)`をまず実行してくださいね．
+```{r}
+# パッケージの呼び出し
+library(openxlsx)
+df_pharma <- read.xlsx('pharma_patent.xlsx')
+
+# 確認
+head(df_pharma)
+```
+
+## 課題
+
+
