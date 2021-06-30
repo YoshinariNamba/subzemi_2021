@@ -268,12 +268,11 @@ head(mpg_new)
 
 
 ### summarize(): 集計
-先ほど説明した`group_by()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．
+先ほど説明した`group_by()`で指定したグループごとに変数を何らかの形で集計してみます．集計を指示するコマンドは`summarize()`です．引数は`新しい変数名 = 集計の内容`のようなイメージ．`.groups = 'drop'`でグループを解除します．
 ```{r summarize1}
 mpg_new <- mpg %>% 
   group_by(manufacturer, year) %>% 
-  summarize(displ_mean = mean(displ)) %>% 
-  ungroup()
+  summarize(displ_mean = mean(displ), .groups = 'drop')
 
 # 確認
 head(mpg_new, n = 10)
@@ -282,8 +281,7 @@ head(mpg_new, n = 10)
 ```{r summarize1_count}
 mpg_new <- mpg %>% 
   group_by(manufacturer, year) %>% 
-  summarize(count = n()) %>% 
-  ungroup()
+  summarize(count = n(), .groups = 'drop')
 
 # 確認
 head(mpg_new, n = 10)
@@ -318,8 +316,7 @@ mpg_new %>%
 # summarize() ver
 mpg_summarize <- mpg %>% 
   group_by(manufacturer, year) %>% 
-  summarize(displ_mean = mean(displ)) %>% 
-  ungroup()
+  summarize(displ_mean = mean(displ), .groups = 'drop')
 
 # mutate() ver
 mpg_mutate <- mpg %>% 
