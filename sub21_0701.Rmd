@@ -156,7 +156,7 @@ df_inventor <- read.table('data/inventor.txt', header = T, sep = ',')
 # 確認
 head(df_inventor)
 ```
-
+`ida`は特許番号，`seq`は複数人の開発者がいることを示す変数，`ida_seq`はそれらをつなげたものです．`ida`の上4桁は出願年になります．   
 .xlsxファイルの読み込みには`openxlsx`というパッケージを使用します．まだインストールしていない人は`install.packages(openxlsx)`をまず実行してくださいね．
 ```{r}
 # パッケージの呼び出し
@@ -166,7 +166,7 @@ df_pharma <- read.xlsx('data/pharma_patent.xlsx')
 # 確認
 head(df_pharma)
 ```
-
+`number`も特許番号です．ハイフン以前は出願年になります．
 ## ＃課題
 開発者・年度・企業ごとの取得特許件数をまとめたデータフレームを作成してください！  
 こんなイメージです．(`patent`が特許件数を表しています．)
@@ -177,4 +177,4 @@ head(df_pharma)
 1.  `df_inventor`と`df_pharma`を結合し，`df_patent`というデータフレームを作成する  
 2.  `df_patent`を集計する  
   
-また，データの型や観測の重複に注意するようにしてください．
+また，「データの型」や「観測の重複」に注意するようにしてください．
