@@ -60,8 +60,8 @@ PC周辺機器の口コミを分析するケースを考えてみます．口コ
 
 ### 欲しいデータがHTML上のどの階層に位置しているのかを確認
 左上の矢印マークを押して，欲しいデータが載っている場所をクリックしてください．  
-ハイライトされているコードの中に「class = “...”」という部分が見つかると思います．  
-[おまけ] Google Chromeの拡張機能Selector Gadgetを使う
+ハイライトされているコードの中に`class = "..."`という部分が見つかると思います．`class`は欲しいデータがHTML上のどこに位置しているのかを指定するうえで便利なコードです．  
+ちなみに[Selector Gadget](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en)というGoogle Chromeの拡張機能を使うとパスがもっと簡単に取り出せるようです．
 
 ## 2-3. Rでコードを書いてデータを取得する @R
 コーディングは以下の手順で行います  
@@ -114,14 +114,15 @@ url <- read_html("https://review.rakuten.co.jp/search/-/100026/cu1001-d0/",
 
 
 ### Step2: 1つのページからデータを取得
-urlから欲しいデータを取ってくるには`html_nodes()`というコマンドを使用します．`()`内には先ほどブラウザで確認したパス(HTML上の位置)を指定します．また，取ってきたデータをテキストの形式で出力するために`html_text()`を使います．
+urlから欲しいデータを取ってくるには`html_nodes()`というコマンドを使用します．`()`内には先ほどブラウザで確認したパス(HTML上の位置)を指定します．イメージとしては、`xpath = '//*[@class = "class名"]'`のように指定します．また，取ってきたデータをテキストの形式で出力するために`html_text()`を使います．
 
 ```{r}
 # データの取得
 reviews <- url %>% 
-  html_nodes(".ratCustomAppearTarget") %>%  # 欲しい情報の位置を指定
-  html_text()                               # テキスト形式で出力
+  html_nodes(xpath = '//*[@class="ratCustomAppearTarget"]') %>%  # 欲しい情報の位置を指定
+  html_text()                                                    # テキスト形式で出力
 ```
+
 
 ちゃんとデータが取れているか最初の10行を確認してみましょう．
 
