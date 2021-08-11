@@ -130,7 +130,7 @@ reviews <- url %>%
 head(reviews, n = 10)
 ```
 
-`\n`が何度も出てきて気持ち悪いですね... ちなみに`\n`は改行を表しています．`str_replace_all()`を使って消してみましょう．
+`\n`が何度も出てきて気持ち悪いですね... `str_replace_all()`を使って消してみましょう．  (ちなみに`\n`は改行を表しています．)
 
 ```{r}
 # \n を削除
@@ -153,22 +153,35 @@ URLの変化の仕方が規則的ならば複数ページからデータを取�
 ```{r}
 # データを取得
 for(i in 2:10){
-  url_tmp <- paste0("https://review.rakuten.co.jp/search/-/100026/cu1001-d0-p", i, "/") %>% 
-    read_html(encoding = "EUC-JP")
+  url_tmp <- paste0("https://review.rakuten.co.jp/search/-/100026/cu1001-d0-p", i, "/") %>% # iページ目のURLを作成
+    read_html(encoding = "EUC-JP")                    # ページの読み込み
   reviews_tmp <- url_tmp %>% 
-    html_nodes(".ratCustomAppearTarget") %>% 
-    html_text() %>% 
-    str_replace_all(pattern = "\n", replacement = "")
-  reviews <- c(reviews, reviews_tmp)
-  Sys.sleep(1)
+    html_nodes(".ratCustomAppearTarget") %>%          # データの位置を指定 
+    html_text() %>%                                   # テキスト形式で出力
+    str_replace_all(pattern = "\n", replacement = "") # 文字を整える
+  reviews <- c(reviews, reviews_tmp)                  # i-1ページ目までのデータと結合
+  Sys.sleep(1)                                        # 1秒時間を空ける
 }
 
 # 確認
-reviews[501:510]
+reviews[201:210]
 ```
 
+# 3. グループワーク
+今まで学んだことを実践してみましょう． 
+次のサイトから東京都港区のコンビニのデータを取得してみてください．  
+- https://www.homemate-research-convenience-store.com/13103/  
+
+欲しいデータは  
+- 店舗名  
+- 住所  
+
+とします．時間に余裕があったらこれらを1つのデータフレームにまとめてみてください．また，
+- 口コミ数  
+
+もGetしてみてください．
 
 
-
-
-
+# < 参考 > 
+- 小澤さん「RでのWeb スクレイピング入門」(https://qiita.com/Tom-tom-tom/items/998e8282d013fb218490)  
+- 村松ほか, 「スクレイピングによるデータ収集」, 技術評論社, 『RユーザーのためのRStudio「実践」入門』，第2章  
