@@ -160,13 +160,13 @@ Step2で行ったことを繰り返しのfor構文を使って2ページ目以�
 # データを取得
 for(i in 2:10){
   url_tmp <- paste0("https://review.rakuten.co.jp/search/-/100026/cu1001-d0-p", i, "/") %>% # iページ目のURLを作成
-    read_html(encoding = "EUC-JP")                    # 読み込み
+    read_html(encoding = "EUC-JP")                                  # 読み込み
   reviews_tmp <- url_tmp %>% 
-    html_nodes(".ratCustomAppearTarget") %>%          # データの位置を指定 
-    html_text() %>%                                   # 文字列の形式で出力
-    str_replace_all(pattern = "\n", replacement = "") # 文字を整える
-  reviews <- c(reviews, reviews_tmp)                  # (i-1)ページ目までのデータと結合
-  Sys.sleep(1)                                        # 1秒時間を空ける
+    html_nodes(xpath = '//*[@class="ratCustomAppearTarget"]') %>%   # データの位置を指定 
+    html_text() %>%                                                 # 文字列の形式で出力
+    str_replace_all(pattern = "\n", replacement = "")               # 文字を整える
+  reviews <- c(reviews, reviews_tmp)                                # (i-1)ページ目までのデータと結合
+  Sys.sleep(1)                                                      # 1秒時間を空ける
 }
 
 # 確認
